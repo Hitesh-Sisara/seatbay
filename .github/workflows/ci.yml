@@ -32,7 +32,7 @@ jobs:
           lipo -info build/Seatbay.app/Contents/MacOS/Seatbay
           test -s build/Seatbay.app/Contents/Resources/AppIcon.icns
           build/Seatbay.app/Contents/MacOS/Seatbay --backup-schedule status
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: Seatbay-${{ github.sha }}
           path: build/Seatbay.zip
