@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Toolchain
+        run: sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+      - name: Check the tag matches VERSION
+        run: |
+          test "v$(tr -d '[:space:]' < VERSION)" = "$GITHUB_REF_NAME" || { echo "VERSION doesn't match $GITHUB_REF_NAME"; exit 1; }
+      - name: Unit tests
+        run: swift test
+      - name: Build universal Seatbay.zip
+        run: ./scripts/build.sh --universal --zip
+      - name: Release notes from CHANGELOG.md
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" {on=1; next}
+            on && /^## \[/ {exit}
+            on {print}
+          ' CHANGELOG.md > notes.md
+          cat >> notes.md <<NOTES
+
+          ### Install
+          Download **Seatbay.zip**, unzip it and move Seatbay.app to Applications. The app is ad-hoc signed, not notarized: the first time, right-click it and choose **Open**. Check the download with \`shasum -a 256 -c Seatbay.zip.sha256\`.
+
+          Seatbay is an independent open-source project, not affiliated with Anthropic.
+          NOTES
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" build/Seatbay.zip build/Seatbay.zip.sha256 \
+            --title "Seatbay ${GITHUB_REF_NAME#v}" --notes-file notes.md --verify-tag

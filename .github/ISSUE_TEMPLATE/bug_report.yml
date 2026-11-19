@@ -1,0 +1,28 @@
+name: Bug report
+description: Something in Seatbay doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: Seatbay, Claude Desktop and macOS versions, and Apple silicon or Intel.
+      placeholder: Seatbay 1.0.0, Claude 6.6395.0, macOS 15.3, Apple silicon
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Health and logs
+      description: |
+        Output of `"/Applications/Seatbay.app/Contents/MacOS/Seatbay" --health` and the last lines of
+        ~/Library/Application Support/Seatbay/Logs/launcher.log or backup.log. Remove emails, hostnames
+        and bucket names. Never paste secrets.json or keys.
+      render: text

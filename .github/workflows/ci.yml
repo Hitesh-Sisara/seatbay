@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: App (build and test)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain
+        run: |
+          sudo xcode-select -s "$(ls -d /Applications/Xcode*.app | sort -V | tail -1)"
+          swift --version
+      - name: Unit tests
+        run: swift test
+      - name: Build Seatbay.app (universal)
+        run: ./scripts/build.sh --universal --zip
+      - name: Check the app bundle
+        run: |
+          codesign --verify --strict build/Seatbay.app
+          lipo -info build/Seatbay.app/Contents/MacOS/Seatbay
+          test -s build/Seatbay.app/Contents/Resources/AppIcon.icns
+          build/Seatbay.app/Contents/MacOS/Seatbay --backup-schedule status
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Seatbay-${{ github.sha }}
+          path: build/Seatbay.zip
+          retention-days: 14
+
+  website:
+    name: Website (type-check and build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm build

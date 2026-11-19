@@ -1,0 +1,10 @@
+.build/
+build/
+.swiftpm/
+*.xcodeproj/xcuserdata/
+DerivedData/
+.DS_Store
+# website (see website/.gitignore too)
+website/node_modules/
+website/dist/
+website/.wrangler/
