@@ -26,6 +26,13 @@ struct SeatbayApp: App {
             CommandGroup(after: .newItem) {
                 Button("Rebuild All Instance Apps") { delegate.store.repairApps(force: true) }
             }
+            CommandGroup(replacing: .help) {
+                Link("Seatbay Help", destination: URL(string: "https://seatbay.sisara.in/docs")!)
+                Link("Release Notes", destination: URL(string: "https://github.com/Hitesh-Sisara/seatbay/releases")!)
+                Link("Report an Issue…", destination: URL(string: "https://github.com/Hitesh-Sisara/seatbay/issues/new/choose")!)
+                Divider()
+                Link("Source Code on GitHub", destination: URL(string: "https://github.com/Hitesh-Sisara/seatbay")!)
+            }
         }
     }
 }
